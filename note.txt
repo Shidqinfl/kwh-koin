@@ -1,0 +1,4 @@
+- koin selektor
+- pzem
+- relay
+- lcd 16x2

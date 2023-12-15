@@ -17,13 +17,14 @@
 #include "pzem.h"
 #include "logger.h"
 #include "coin.h"
-
-String chat_id;
+#include "relay.h"
 logger logg;
 pzem pm;
 WiFiClientSecure client;
 UniversalTelegramBot bot(TELEGRAM_TOKEN,client);
 coin coins;
+relay relays;
+String chat_id;
 // wifi
 void initWifi(){
   WiFi.setHostname("KWH Koin");
@@ -45,11 +46,11 @@ void handleNewMessages(int numNewMessages){
   Serial.println("[HANDLER] "+String(numNewMessages));
   String from_name ;
 
+  sprintf(updata, "---");
   for (int i = 0; i < numNewMessages; i++)
   {
     chat_id = bot.messages[i].chat_id;
     String text = bot.messages[i].text;
-  sprintf(updata, "---");
 
     from_name = bot.messages[i].from_name;
     if (from_name == "")
@@ -117,6 +118,7 @@ void initLCD(){
 void lcdPrint(uint8_t col, uint8_t row, String data){// col 1 - 16 | row 0 - 1 | data string
     lcd.setCursor(col, row);
     lcd.print(data);
+    lcd.clear();
 }
 
 void lcdPrintScroll(int row, String message, int delayTime, int lcdColumns){
@@ -134,13 +136,22 @@ void lcdPrintScroll(int row, String message, int delayTime, int lcdColumns){
 void setup() {
   logg.init();
   logg.print("trace", "start");
+  logg.print("trace", "relay initialize");
+  relays.init();
+  logg.print("trace", "PM initialize");
   pm.init(PMid);
+  logg.print("debug", "PM ID: "+  String(PMid));
+  logg.print("trace", "Coin Selector initialize");
   coins.init();
+  logg.print("trace", "LCD 16x2 initialize");
   initLCD(); 
 }
+int thresholdTime = 30; //menit
+int thresholdEnergy = 10; //kwh
 void main1(){
-  int thresholdTime = 30; //menit
-  int thresholdEnergy = 10; //kwh
+  lcdPrint(0,0,"start");
+  pm.singlePhase(PMid, 0);
+
 
   float voltage =  pm.Cur_voltage();
   float current = pm.Cur_current();
@@ -151,20 +162,42 @@ void main1(){
   if (coinImpulse!=0){
     thresholdEnergy = thresholdEnergy * coinImpulse;
     thresholdTime = thresholdTime * coinImpulse;
-    //relay_on(duration, limitenergy);
-    if(energy == thresholdEnergy) {
-      //relay_off;
+    for (size_t i = 0; i <= 4; i++)
+    {
+      relays.RelayON(i);
     }
-
+    if(energy == thresholdEnergy) {
+      for (size_t i = 0; i <= 4; i++)
+      {
+        relays.RelayOFF(i);
+      }
+    }
   }
 }
-void loop() {
+
+
+
+void test(){
   lcdPrint(0,0,"start");
   pm.singlePhase(PMid, 0);
   float voltage =  pm.singlePhase(PMid, 1);
   float current = pm.singlePhase(PMid, 2);
   float power = pm.singlePhase(PMid, 3);
   float energy = pm.singlePhase(PMid, 4);
-
+  lcdPrint(0, 0, "Voltage");
+  lcdPrint(0, 0, String(voltage));
+  delay(2000);
+  lcdPrint(0, 0, "Current");
+  lcdPrint(0, 0, String(current));
+  delay(2000);
+  lcdPrint(0, 0, "Power");
+  lcdPrint(0, 0, String(power));
+  delay(2000);
+  lcdPrint(0, 0, "Energy");
+  lcdPrint(0, 0, String(energy));
   coins.readImpulse();
+}
+
+void loop() {
+  test();
 }

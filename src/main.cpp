@@ -152,7 +152,7 @@ void initLCD(){
 void lcdPrint(uint8_t col, uint8_t row, String data){// col 1 - 16 | row 0 - 1 | data string
     lcd.setCursor(col, row);
     lcd.print(data);
-    lcd.clear();
+    // lcd.clear();
 }
 
 void lcdPrintScroll(int row, String message, int delayTime, int lcdColumns){
@@ -219,16 +219,18 @@ void test(){
   float power = pm.singlePhase(PMid, 3);
   float energy = pm.singlePhase(PMid, 4);
   lcdPrint(0, 0, "Voltage");
-  lcdPrint(0, 0, String(voltage));
+  lcdPrint(8, 0, String(voltage));
   delay(2000);
   lcdPrint(0, 0, "Current");
-  lcdPrint(0, 0, String(current));
+  lcdPrint(8, 0, String(current));
   delay(2000);
-  lcdPrint(0, 0, "Power");
-  lcdPrint(0, 0, String(power));
+  lcdPrint(0, 0, "Power  ");
+  lcdPrint(8, 0, String(power));
   delay(2000);
-  lcdPrint(0, 0, "Energy");
-  lcdPrint(0, 0, String(energy));
+  lcdPrint(0, 0, "Energy  ");
+  lcdPrint(8, 0, String(energy));
+  delay(2000);
+  lcd.clear();
   coins.readImpulse();
 }
 

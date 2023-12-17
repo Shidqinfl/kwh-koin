@@ -183,17 +183,16 @@ void setup() {
 int thresholdTime = 30; //menit
 int thresholdEnergy = 10; //kwh
 void main1(){
-  lcdPrint(0,0,"start");
+  lcdPrint(0,0,"Insert Coin");
   pm.singlePhase(PMid, 0);
-
-
-  float voltage =  pm.Cur_voltage();
-  float current = pm.Cur_current();
-  float power = pm.Cur_power();
-  float energy = pm.Cur_energy();
-
   int coinImpulse = coins.readImpulse();
-  if (coinImpulse!=0){
+  while (coinImpulse!=0)
+  { 
+    float voltage =  pm.Cur_voltage();
+    float current = pm.Cur_current();
+    float power = pm.Cur_power();
+    float energy = pm.Cur_energy();
+
     thresholdEnergy = thresholdEnergy * coinImpulse;
     thresholdTime = thresholdTime * coinImpulse;
     for (size_t i = 0; i <= 4; i++)

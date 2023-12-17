@@ -4,12 +4,12 @@ int impulse = 0;
 int resImpulse=0;
 int TotalAmmount = 0;
 int pincoin = 13;
-void incommingImpulse(){
+void IRAM_ATTR isr(){
     impulse=impulse+1;
     resImpulse=0;
 }
 void coin::init(){
-    attachInterrupt(pincoin,incommingImpulse, FALLING);
+    attachInterrupt(pincoin,isr, FALLING);
     EEPROM.get(0, TotalAmmount);
 }
 int coin::readImpulse(){

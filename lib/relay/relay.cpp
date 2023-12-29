@@ -13,7 +13,7 @@ void relay::init(){
     pinMode(PIN_RELAY_3, OUTPUT);
     pinMode(PIN_RELAY_4, OUTPUT);
 }
-int relay::RelayON(int chan){ //1 -4
+int relay::RelayOFF(int chan){ //1 -4
     int num;
     switch (chan)
     {
@@ -37,7 +37,7 @@ int relay::RelayON(int chan){ //1 -4
  return num;
 }
 
-int relay::RelayOFF(int chan){
+int relay::RelayON(int chan){
     int num;
     switch (chan)
     {

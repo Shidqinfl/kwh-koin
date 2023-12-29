@@ -30,7 +30,10 @@ float pzem::singlePhase(uint8_t pm_id, uint8_t type){
         float energy = Dpzem.energy();
         if( isnan(current)|| isnan(power)|| isnan(energy) ){
             logg.print("error", "failed get pmID:"+String(id));
-            sprintf(pm, "{\"id\":%d,\"voltage\":%s,\"current\":%s,\"power\":%s,\"energy\":%s}", pm_id,"0.0","0.0","-1.0","0.0");   
+            sprintf(pm, "{\"id\":%d,\"voltage\":%s,\"current\":%s,\"power\":%s,\"energy\":%s}", pm_id,"0.0","0.0","-1.0","0.0");  
+            current = -1;
+            power = -1;
+            energy = -1; 
         }else{
             sprintf(pm, "{\"id\":%d,\"voltage\":%s,\"current\":%s,\"power\":%s,\"energy\":%s}", pm_id, String(voltage).c_str(),String(current).c_str(),String(power).c_str(),String(energy).c_str()); 
         }   

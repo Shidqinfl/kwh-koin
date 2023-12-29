@@ -3,10 +3,10 @@
 #include "Arduino.h"
 
 
-#define SSID_Public "OPPO F7"
-#define PASS_Public "wawaydeng"
-const static char* TELEGRAM_TOKEN = "6641457820:AAFhg7hX9MaEQjVSc-ksd4o7ZNkZtvxH6UQ";
-const static char* forceClientID = "875203901";
+#define SSID_Public "ga ada"
+#define PASS_Public "Namakamu"
+const static char* TELEGRAM_TOKEN = "6974967047:AAGAQQPMvVLHg1crul3th3lpsfqRky-nczc";
+const static char* forceClientID = "735707164";
 
 const unsigned long BOT_MTBS = 1000;
 static unsigned long bot_lasttime; 

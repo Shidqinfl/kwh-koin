@@ -26,6 +26,7 @@ coin coins;
 relay relays;
 String chat_id;
 // wifi
+
 void initWifi(){
   WiFi.setHostname("KWH Koin");
   WiFi.mode(WIFI_STA);
@@ -35,6 +36,7 @@ void initWifi(){
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
+    // lcdPrint();
   }
   Serial.println("");
   Serial.println("[INFO] WiFi connected"); 
@@ -65,6 +67,13 @@ void handleNewMessages(int numNewMessages){
     {
       bot.sendMessage(chat_id, "starting to cut off user", "");
       //function cut off
+      relays.RelayOFF(4);
+    }
+    if (text == "/forceStart" || text == "/forceStart@_")
+    {
+      bot.sendMessage(chat_id, "starting to ON relay", "");
+      //function cut off
+      relays.RelayON(4);
     }
 
     if (text == "/options"|| text == "/options@_")
@@ -73,16 +82,16 @@ void handleNewMessages(int numNewMessages){
       // bot.sendMessageWithReplyKeyboard(chat_id, "Choose from one of the following options", "", keyboardJson, true);
     }
 
-    if (text == "/start" || text == "/start@TandonMonitor_bot")
+    if (text == "/start" || text == "/start@")
     {
-      String welcome = "Welcome to TandonMonitor_Bot, " + from_name + ".\n";
+      String welcome = "Welcome to kwhcoingobang_Bot, " + from_name + ".\n";
       welcome += "Please Input these commands .\n\n";
       welcome += "/data: to get all parameters\n";
       // welcome += "/ph : to get pH data\n";
       // welcome += "/waterquality : to get water quality\n";
       // welcome += "/waterlevel : to get water level\n";
       // welcome += "/options : returns the reply keyboard\n";
-      bot.sendMessage(chat_id, welcome, "Markdown");
+      bot.sendMessage(chat_id, welcome.c_str(), "Markdown");
     }
   }
   Serial.println("[HANDLER] " + from_name);
@@ -148,6 +157,7 @@ void i2cscan(){
 void initLCD(){
   lcd.init();              
   lcd.backlight();
+  lcd.setContrast(100);
 }
 void lcdPrint(uint8_t col, uint8_t row, String data){// col 1 - 16 | row 0 - 1 | data string
     lcd.setCursor(col, row);
@@ -172,6 +182,9 @@ void setup() {
   logg.print("trace", "start");
   logg.print("trace", "relay initialize");
   relays.init();
+  for (size_t i = 1; i <=4; i++){
+    relays.RelayOFF(i);
+  }
   logg.print("trace", "PM initialize");
   pm.init(PMid);
   logg.print("debug", "PM ID: "+  String(PMid));
@@ -179,31 +192,60 @@ void setup() {
   coins.init();
   logg.print("trace", "LCD 16x2 initialize");
   initLCD(); 
+  lcdPrint(3,0,"Starting");
+  logg.print("trace", "WiFI");
+  initWifi();
 }
-int thresholdTime = 30; //menit
-int thresholdEnergy = 10; //kwh
+int thresholdTime = 10; //menit
+int thresholdEnergy = 1; //kwh
+
+
+unsigned long prevMillis = 0;
 void main1(){
-  lcdPrint(0,0,"Insert Coin");
-  pm.singlePhase(PMid, 0);
+  botHandlerMessage();
+  lcdPrint(2,0,"Insert Coin");
+  lcdPrint(4,1,"Rp.1000");
+  unsigned long currMillis = millis();
   int coinImpulse = coins.readImpulse();
-  while (coinImpulse!=0)
-  { 
+  
+  while (coinImpulse != 0){ 
+    botHandlerMessage();
+    Serial.println("=====================");
+    lcd.clear();
+    pm.singlePhase(PMid, 0);
     float voltage =  pm.Cur_voltage();
     float current = pm.Cur_current();
     float power = pm.Cur_power();
     float energy = pm.Cur_energy();
-
+    lcdPrint(0, 0, "Voltage");
+    lcdPrint(8, 0, String(voltage));
+    delay(2000);
+    lcdPrint(0, 0, "Current");
+    lcdPrint(8, 0, String(current));
+    delay(2000);
+    lcdPrint(0, 0, "Power  ");
+    lcdPrint(8, 0, String(power));
+    delay(2000);
+    lcdPrint(0, 0, "Energy  ");
+    lcdPrint(8, 0, String(energy));
+    delay(2000);
+    lcd.clear();
+    uplink("Voltage: "+ String(voltage) + " v \n Current:"+ String(current) + " a \n Power: " +String(power) + " w \n Energy: "+ String(energy)+ " w");
     thresholdEnergy = thresholdEnergy * coinImpulse;
     thresholdTime = thresholdTime * coinImpulse;
-    for (size_t i = 0; i <= 4; i++)
+    for (size_t i = 1; i <=4; i++)
     {
       relays.RelayON(i);
     }
+    
     if(energy == thresholdEnergy) {
-      for (size_t i = 0; i <= 4; i++)
+      for (size_t i = 1; i <=4; i++)
       {
         relays.RelayOFF(i);
+        coins.resetImpulse();
+        break;
       }
+      
     }
   }
 }
@@ -234,10 +276,10 @@ void test(){
 }
 
 void loop() {
-  i2cscan();
-  while (1)
-  {
-    test();
-  }
-  
+  // i2cscan();
+  // while (1)
+  // {
+  //   test();
+  // }
+  main1();
 }

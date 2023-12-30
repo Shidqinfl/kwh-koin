@@ -42,7 +42,7 @@ void initWifi(){
   Serial.println("[INFO] WiFi connected"); 
 }
 //telegram handler
-
+bool relaystate=false;
 void handleNewMessages(int numNewMessages){
   Serial.println("[HANDLER] handleNewMessages");
   Serial.println("[HANDLER] "+String(numNewMessages));
@@ -68,12 +68,14 @@ void handleNewMessages(int numNewMessages){
       bot.sendMessage(chat_id, "starting to cut off user", "");
       //function cut off
       relays.RelayOFF(4);
+      relaystate = false;
     }
     if (text == "/forceStart" || text == "/forceStart@_")
     {
       bot.sendMessage(chat_id, "starting to ON relay", "");
       //function cut off
       relays.RelayON(4);
+      relaystate = true;
     }
 
     if (text == "/options"|| text == "/options@_")
@@ -202,13 +204,14 @@ int thresholdEnergy = 1; //kwh
 
 unsigned long prevMillis = 0;
 void main1(){
+  unsigned long currMillis= millis();
   botHandlerMessage();
   lcdPrint(2,0,"Insert Coin");
   lcdPrint(4,1,"Rp.1000");
   unsigned long currMillis = millis();
   int coinImpulse = coins.readImpulse();
-  
-  while (coinImpulse != 0){ 
+  unsigned long sectick = 0;
+  while (coinImpulse != 0 || relaystate ==true){ 
     botHandlerMessage();
     Serial.println("=====================");
     lcd.clear();
@@ -229,8 +232,13 @@ void main1(){
     lcdPrint(0, 0, "Energy  ");
     lcdPrint(8, 0, String(energy));
     delay(2000);
-    lcd.clear();
-    uplink("Voltage: "+ String(voltage) + " v \n Current:"+ String(current) + " a \n Power: " +String(power) + " w \n Energy: "+ String(energy)+ " w");
+    lcd.clear();  
+    if(currMillis - prevMillis >= 120000){
+      uplink("Voltage: "+ String(voltage) + " v \n Current:"+ String(current) + " a \n Power: " +String(power) + " w \n Energy: "+ String(energy)+ " w");
+    }
+    if(currMillis - prevMillis >= 1000){
+      sectick+1;
+    }
     thresholdEnergy = thresholdEnergy * coinImpulse;
     thresholdTime = thresholdTime * coinImpulse;
     for (size_t i = 1; i <=4; i++)
@@ -238,15 +246,16 @@ void main1(){
       relays.RelayON(i);
     }
     
-    if(energy == thresholdEnergy) {
+    if(energy == thresholdEnergy || relaystate == false || sectick == 600000) {
       for (size_t i = 1; i <=4; i++)
       {
         relays.RelayOFF(i);
         coins.resetImpulse();
         break;
+        sectick =0;
       }
-      
     }
+    prevMillis = currMillis;
   }
 }
 

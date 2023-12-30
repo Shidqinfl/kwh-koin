@@ -57,7 +57,12 @@ void handleNewMessages(int numNewMessages){
     from_name = bot.messages[i].from_name;
     if (from_name == "")
       from_name = "Guest";
-
+    if (text == "/start" || text == "/start@"){
+      String welcome = "Welcome to kwhcoingobang_Bot, " + from_name + ".\n";
+      welcome += "Please Input these commands .\n\n";
+      welcome += "/data: to get all parameters\n";
+      bot.sendMessage(chat_id, welcome.c_str(), "Markdown");
+    }
     if (text == "/data" || text == "/data@_")
     {
       bot.sendMessage(chat_id, updata, "");
@@ -67,34 +72,23 @@ void handleNewMessages(int numNewMessages){
     {
       bot.sendMessage(chat_id, "starting to cut off user", "");
       //function cut off
-      relays.RelayOFF(4);
+      for (size_t i = 1; i <= 4; i++)
+      {
+        relays.RelayOFF(i);
+      }
       relaystate = false;
     }
     if (text == "/forceStart" || text == "/forceStart@_")
     {
       bot.sendMessage(chat_id, "starting to ON relay", "");
-      //function cut off
-      relays.RelayON(4);
+      //function cut on
+      for (size_t i = 1; i <= 4; i++)
+      {
+        relays.RelayON(i);
+      }
       relaystate = true;
     }
 
-    if (text == "/options"|| text == "/options@_")
-    {
-      // // String keyboardJson = "[[\"/ph\", \"/waterquality\",\"/waterlevel\"],[\"/data\"]]";
-      // bot.sendMessageWithReplyKeyboard(chat_id, "Choose from one of the following options", "", keyboardJson, true);
-    }
-
-    if (text == "/start" || text == "/start@")
-    {
-      String welcome = "Welcome to kwhcoingobang_Bot, " + from_name + ".\n";
-      welcome += "Please Input these commands .\n\n";
-      welcome += "/data: to get all parameters\n";
-      // welcome += "/ph : to get pH data\n";
-      // welcome += "/waterquality : to get water quality\n";
-      // welcome += "/waterlevel : to get water level\n";
-      // welcome += "/options : returns the reply keyboard\n";
-      bot.sendMessage(chat_id, welcome.c_str(), "Markdown");
-    }
   }
   Serial.println("[HANDLER] " + from_name);
 }
@@ -208,7 +202,7 @@ void main1(){
   botHandlerMessage();
   lcdPrint(2,0,"Insert Coin");
   lcdPrint(4,1,"Rp.1000");
-  unsigned long currMillis = millis();
+
   int coinImpulse = coins.readImpulse();
   unsigned long sectick = 0;
   while (coinImpulse != 0 || relaystate ==true){ 

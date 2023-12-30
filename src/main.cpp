@@ -172,7 +172,7 @@ void lcdPrintScroll(int row, String message, int delayTime, int lcdColumns){
     delay(delayTime);
   }
 }
-
+bool first = true;
 void setup() {
   logg.init();
   logg.print("trace", "start");
@@ -227,8 +227,9 @@ void main1(){
     lcdPrint(8, 0, String(energy));
     delay(2000);
     lcd.clear();  
-    if(currMillis - prevMillis >= 120000){
+    if(currMillis - prevMillis >= 120000 || first == true ){
       uplink("Voltage: "+ String(voltage) + " v \n Current:"+ String(current) + " a \n Power: " +String(power) + " w \n Energy: "+ String(energy)+ " w");
+      first = false;
     }
     if(currMillis - prevMillis >= 1000){
       sectick+1;
